@@ -1,0 +1,60 @@
+{
+  "recibos": [
+    {
+      "data": "22/04/2026",
+      "valor": "160,00",
+      "cpf_pagador": "06319881909",
+      "cpf_benef": "06319881909",
+      "descricao": "Referente a 01 sessão de psicoterapia realizada no dia 10/03/2026.",
+      "codigo": "R01.001.001",
+      "inscricao": "06/23007",
+      "tipo_pagador": "PF",
+      "registro": "06/23007",
+      "cpf_prof": "08750012894",
+      "id": 1777059988818,
+      "data_criacao": "2026-04-24T16:46:28.818885"
+    },
+    {
+      "data": "15/04/2026",
+      "valor": "280,00",
+      "cpf_pagador": "14743723841",
+      "cpf_benef": "52857825897",
+      "descricao": "Referente a 02 sessões de psicoterapia realizadas nos dias 12/03/2026 e 16/03/2026.",
+      "codigo": "R01.001.001",
+      "inscricao": "06/23007",
+      "tipo_pagador": "PF",
+      "registro": "06/23007",
+      "cpf_prof": "08750012894",
+      "id": 1777060157364,
+      "data_criacao": "2026-04-24T16:49:17.364762"
+    },
+    {
+      "data": "21/04/2026",
+      "valor": "480,00",
+      "cpf_pagador": "02409844804",
+      "cpf_benef": "14217085826",
+      "descricao": "Referente a 04 sessões de psicoterapia realizadas nos dias 04/03/2026, 11/03/2026, 18/03/2026 e 25/03/2026.",
+      "codigo": "R01.001.001",
+      "inscricao": "06/23007",
+      "tipo_pagador": "PF",
+      "registro": "06/23007",
+      "cpf_prof": "08750012894",
+      "id": 1777060198256,
+      "data_criacao": "2026-04-24T16:49:58.256326"
+    },
+    {
+      "data": "16/04/2026",
+      "valor": "260,00",
+      "cpf_pagador": "26901130821",
+      "cpf_benef": "26901130821",
+      "descricao": "Referente a 02 sessões de psicoterapia realizadas nos dias 11/03/2026 e 25/03/2026.",
+      "codigo": "R01.001.001",
+      "inscricao": "06/23007",
+      "tipo_pagador": "PF",
+      "registro": "06/23007",
+      "cpf_prof": "08750012894",
+      "id": 1777060238216,
+      "data_criacao": "2026-04-24T16:50:38.216428"
+    }
+  ]
+}

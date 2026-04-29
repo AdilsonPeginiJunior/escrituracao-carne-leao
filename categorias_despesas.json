@@ -1,0 +1,187 @@
+[
+    {
+        "codigo": "P10.01.00001",
+        "descricao": "Pagamento de Água do escritório/consultório",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00002",
+        "descricao": "Pagamento de Aluguel do escritório/consultório",
+        "contagem_uso": 4
+    },
+    {
+        "codigo": "P10.01.00003",
+        "descricao": "Pagamento de Condomínio do escritório/consultório",
+        "contagem_uso": 4
+    },
+    {
+        "codigo": "P10.01.00004",
+        "descricao": "Pagamento de Contribuições obrigatórias a entidades de classe",
+        "contagem_uso": 3
+    },
+    {
+        "codigo": "P10.01.00005",
+        "descricao": "Pagamento de Cópia e autenticação de documentos",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00006",
+        "descricao": "Pagamento de Emolumentos pagos a terceiros",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00007",
+        "descricao": "Pagamento de Energia do escritório/consultório",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00008",
+        "descricao": "Pagamento de Gás do escritório/consultório",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00009",
+        "descricao": "Pagamento de IPTU do escritório/consultório quando pago pelo contribuinte",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00010",
+        "descricao": "Pagamento de ISS",
+        "contagem_uso": 1
+    },
+    {
+        "codigo": "P10.01.00011",
+        "descricao": "Pagamento de Material de conservação e limpeza do escritório/consultório",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00012",
+        "descricao": "Pagamento de Material de escritório",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P10.01.00013",
+        "descricao": "Pagamento de Remuneração paga a terceiros, com vínculo empregatício, INSS e FGTS",
+        "contagem_uso": 6
+    },
+    {
+        "codigo": "P10.01.00014",
+        "descricao": "Pagamento de Telefone do escritório/consultório",
+        "contagem_uso": 4
+    },
+    {
+        "codigo": "P11.01.00001",
+        "descricao": "Pagamento de Aplicação de capital",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00002",
+        "descricao": "Pagamento de Aquisição de computador",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00003",
+        "descricao": "Pagamento de Aquisição de linha telefônica/aparelho telefônico",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00004",
+        "descricao": "Pagamento de Aquisição de máquina e equipamento",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00005",
+        "descricao": "Pagamento de Arrendamento mercantil (leasing) de automóveis, equipamentos e máquinas",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00006",
+        "descricao": "Pagamento de Carnê-leão pago",
+        "contagem_uso": 1
+    },
+    {
+        "codigo": "P11.01.00007",
+        "descricao": "Pagamento de Combustível",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00008",
+        "descricao": "Pagamento de Conservação e reforma do imóvel do contribuinte",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00009",
+        "descricao": "Pagamento de Depreciação de instalações e equipamentos",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00010",
+        "descricao": "Pagamento de Despesas de locomoção e transporte, salvo de representante comercial autônomo",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00011",
+        "descricao": "Pagamento de Enciclopédia ou livros/revistas em geral",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00012",
+        "descricao": "Pagamento de Estacionamento",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00013",
+        "descricao": "Pagamento de IPTU de imóvel residencial",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00014",
+        "descricao": "Pagamento de Manutenção do veículo",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00015",
+        "descricao": "Pagamento de Imposto complementar pago",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00016",
+        "descricao": "Pagamento de Seguro de vida",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00017",
+        "descricao": "Pagamento de Seguro de imóvel residencial",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P11.01.00018",
+        "descricao": "Pagamento de Seguro de carro",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P20.01.00001",
+        "descricao": "Previdência Oficial",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P20.01.00004",
+        "descricao": "Imposto Pago",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P20.01.00002",
+        "descricao": "Pensão Alimentícia",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P20.01.00003",
+        "descricao": "Imposto Pago no Exterior",
+        "contagem_uso": 0
+    },
+    {
+        "codigo": "P20.01.00005",
+        "descricao": "Outras Despesas",
+        "contagem_uso": 0
+    }
+]
