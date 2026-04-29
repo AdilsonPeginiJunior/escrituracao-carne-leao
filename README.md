@@ -1,5 +1,7 @@
 # Sistema de Geração de CSV - Carnê Leão
 
+Repositório GitHub: https://github.com/AdilsonPeginiJunior/escrituracao-carne-leao
+
 Sistema em Python com interface gráfica (customtkinter) para geração de arquivos CSV de receita saúde e despesas profissionais, compatíveis com a importação no site da Receita Federal para profissionais de saúde.
 
 ## Recursos
