@@ -174,13 +174,17 @@ Data;Código;Inscrição;Valor;;Descrição;Tipo;CPF_Pagador;CPF_Prof;;;;S;CPF_P
 
 Formato padrão: Semicolon-delimited sem cabeçalho.
 
-- Para a maioria dos códigos, o CSV possui 7 colunas:
+**Regra Especial:**
+- **Apenas o código `P10.01.00006`** (Pagamento de Emolumentos pagos a terceiros) pode incluir os campos `competencia`, `multa` e `juros`
+- Todos os outros códigos exportam apenas os **4 campos básicos**
+
+Para o código `P10.01.00006`:
 
 ```
-Data;Código;Valor;Descrição;Valor_Comp;;Competência
+Data;Código;Valor;Descrição;Multa;Juros;Competência
 ```
 
-- Para o código `P11.01.00006` (Pagamento de Carnê-leão pago), o CSV deve conter apenas 4 colunas:
+Para todos os outros códigos (incluindo `P11.01.00006`):
 
 ```
 Data;Código;Valor;Descrição
@@ -191,9 +195,9 @@ Data;Código;Valor;Descrição
 2. Código de Despesa (ex: P20.01.00001)
 3. Valor em R$ (ex: 999999,99)
 4. Descrição da Despesa
-5. Valor Complementar (opcional, apenas para códigos que aceitam 7 colunas)
-6. Vazio (apenas para códigos que aceitam 7 colunas)
-7. Competência (mm/aaaa - opcional, apenas para códigos que aceitam 7 colunas)
+5. Multa (apenas para `P10.01.00006`)
+6. Juros (apenas para `P10.01.00006`)
+7. Competência (mm/aaaa - apenas para `P10.01.00006`)
 
 **Códigos de Despesa Válidos:**
 - P20.01.00001 - Previdência Oficial
