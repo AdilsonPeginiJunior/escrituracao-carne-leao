@@ -29,29 +29,32 @@ class DespesasManager:
         """
         Exporta as despesas para um arquivo CSV
         Formato compatível com Receita Federal.
-        Para o código P11.01.00006, apenas os campos básicos são escritos.
+        Apenas o código P10.01.00004 aceita competência, multa e juros.
+        Todos os outros códigos usam apenas os campos básicos.
         """
         with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=';')
 
             # Escrever dados (SEM cabeçalho, conforme padrão da Receita Federal)
             for despesa in self.despesas:
-                if despesa.get('codigo') == 'P11.01.00006':
+                if despesa.get('codigo') == 'P10.01.00004':
+                    # P10.01.00004: inclui multa, juros e competência
                     row = [
                         despesa.get('data', ''),
-                        despesa.get('codigo', 'P11.01.00006'),
-                        despesa.get('valor', ''),
-                        despesa.get('descricao', '')
-                    ]
-                else:
-                    row = [
-                        despesa.get('data', ''),
-                        despesa.get('codigo', 'P20.01.00005'),
+                        despesa.get('codigo', 'P10.01.00004'),
                         despesa.get('valor', ''),
                         despesa.get('descricao', ''),
                         despesa.get('multa', ''),
                         despesa.get('juros', ''),
                         despesa.get('competencia', '')
+                    ]
+                else:
+                    # Todos os outros códigos: apenas campos básicos
+                    row = [
+                        despesa.get('data', ''),
+                        despesa.get('codigo', ''),
+                        despesa.get('valor', ''),
+                        despesa.get('descricao', '')
                     ]
                 writer.writerow(row)
 

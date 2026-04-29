@@ -7,7 +7,7 @@
     {
         "codigo": "P10.01.00002",
         "descricao": "Pagamento de Aluguel do escritório/consultório",
-        "contagem_uso": 4
+        "contagem_uso": 6
     },
     {
         "codigo": "P10.01.00003",
@@ -17,7 +17,7 @@
     {
         "codigo": "P10.01.00004",
         "descricao": "Pagamento de Contribuições obrigatórias a entidades de classe",
-        "contagem_uso": 3
+        "contagem_uso": 4
     },
     {
         "codigo": "P10.01.00005",
@@ -67,7 +67,7 @@
     {
         "codigo": "P10.01.00014",
         "descricao": "Pagamento de Telefone do escritório/consultório",
-        "contagem_uso": 4
+        "contagem_uso": 5
     },
     {
         "codigo": "P11.01.00001",
