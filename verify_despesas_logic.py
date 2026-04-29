@@ -8,9 +8,9 @@ from models.despesas import DespesasManager
 def verify_despesas_export():
     manager = DespesasManager()
 
-    # Test P10.01.00004 with Multa and Juros (special case)
-    test_code = 'P10.01.00004'  # Contribuições obrigatórias
-    test_desc = 'Pagamento de Contribuições obrigatórias a entidades de classe'
+    # Test P10.01.00006 with Multa and Juros (special case)
+    test_code = 'P10.01.00006'  # Emolumentos pagos a terceiros
+    test_desc = 'Pagamento de Emolumentos pagos a terceiros'
 
     print(f"Testing with: {test_code} - {test_desc}")
 
@@ -49,7 +49,8 @@ def verify_despesas_export():
             # Column 7 (index 6) is Competence
             assert row1[6] == '05/2026', f"Expected competence 05/2026, got {row1[6]}"
 
-            print("Despesas Export Verification V2 (P10.01.00004 with Multa/Juros): PASSED")
+            print(
+                "Despesas Export Verification V2 (P10.01.00006 with Multa/Juros): PASSED")
 
     except Exception as e:
         print(f"Despesas Export Verification FAILED - {e}")
@@ -98,11 +99,10 @@ def verify_despesas_export():
         if os.path.exists(output_file):
             os.remove(output_file)
 
-
     # Test P10 exports with only the basic fields (no competencia, multa, juros)
     manager.clear()
-    test_code = 'P10.01.00013'
-    test_desc = 'Pagamento de Remuneração paga a terceiros, com vínculo empregatício, INSS e FGTS'
+    test_code = 'P10.01.00004'
+    test_desc = 'Pagamento de Contribuições obrigatórias a entidades de classe'
     manager.add_despesa({
         'data': '20/06/2026',
         'codigo': test_code,
@@ -125,19 +125,20 @@ def verify_despesas_export():
             rows = list(reader)
 
             if not rows:
-                print("FAILED: CSV empty for P10.01.00013")
+                print("FAILED: CSV empty for P10.01.00004")
                 return
 
             row1 = rows[0]
-            assert len(row1) == 4, f"Expected 4 columns for P10.01.00013, got {len(row1)}"
+            assert len(
+                row1) == 4, f"Expected 4 columns for P10.01.00004, got {len(row1)}"
             assert row1[1] == test_code, f"Expected code {test_code}, got {row1[1]}"
             assert row1[2] == '100,00', f"Expected valor 100,00, got {row1[2]}"
             assert row1[3] == test_desc, f"Expected descricao {test_desc}, got {row1[3]}"
 
-            print("Despesas Export Verification V2 (P10.01.00013): PASSED")
+            print("Despesas Export Verification V2 (P10.01.00004): PASSED")
 
     except Exception as e:
-        print(f"Despesas Export Verification FAILED - P10.01.00013: {e}")
+        print(f"Despesas Export Verification FAILED - P10.01.00004: {e}")
     finally:
         if os.path.exists(output_file):
             os.remove(output_file)
