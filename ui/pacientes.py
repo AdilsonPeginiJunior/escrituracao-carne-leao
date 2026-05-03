@@ -82,7 +82,7 @@ class CadastroPacientesWindow(ctk.CTkToplevel):
         gera_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
         gera_frame.pack(side="left", fill="x", expand=True, padx=(5, 0))
         ctk.CTkLabel(gera_frame, text="Gera Relatório").pack(anchor="w")
-        gera_cb = ctk.CTkComboBox(gera_frame, values=["Sim", "Não"])
+        gera_cb = ctk.CTkComboBox(gera_frame, values=["Sim", "Não", "_RelatorioTemplateCamila.docx","_RelatorioTemplateCarimboFem.docx", "_RelatorioTemplateCarimboFemCid32.docx", "_RelatorioTemplateCarimboMasc.docx", "_RelatorioTemplateDanilo.docx", "_RelatorioTemplateDigitalFem.docx", "_RelatorioTemplateDigitalMasc.docx"])
         gera_cb.pack(fill="x")
         gera_cb.set("")
         self.entries['gera_relatorio'] = gera_cb

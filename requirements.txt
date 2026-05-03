@@ -1,2 +1,6 @@
 customtkinter==5.2.2
 python-dateutil>=2.8.2
+python-docx>=0.8.11
+pdf2docx>=0.5.1
+reportlab>=3.6.0
+pypdf>=3.0.0

@@ -10,6 +10,7 @@ from models.despesas import DespesasManager
 from models.storage import RecibosStorage, DespesasStorage, PacientesStorage
 from models.auth import AuthManager
 from ui.widgets import create_frame, create_label, create_entry, create_button, DatePickerFrame, MultiDatePickerFrame, MonthYearPickerFrame
+from ui.relatorios import GerarRelatoriosWindow
 
 
 class AplicacaoCarneLeao:
@@ -299,6 +300,12 @@ class AplicacaoCarneLeao:
         window.grab_set()
         window.focus_force()
 
+    def open_relatorios_window(self):
+        """Abre janela de geração de relatórios"""
+        window = GerarRelatoriosWindow(self.root, self.current_user)
+        window.grab_set()
+        window.focus_force()
+
     def setup_receita_saude_tab(self):
         tab = self.notebook.add("Receita Saúde")
 
@@ -500,6 +507,17 @@ class AplicacaoCarneLeao:
             font=("Arial", 12, "bold")
         )
         export_btn.grid(row=2, column=0, pady=10, sticky="ew", padx=10)
+
+        # Botão para gerar relatórios
+        relatorios_btn = ctk.CTkButton(
+            right_frame,
+            text="Gerar Relatórios",
+            command=self.open_relatorios_window,
+            fg_color="darkblue",
+            height=40,
+            font=("Arial", 12, "bold")
+        )
+        relatorios_btn.grid(row=3, column=0, pady=10, sticky="ew", padx=10)
 
         # Carregar recibos ao iniciar
         self.refresh_recibos_list()
