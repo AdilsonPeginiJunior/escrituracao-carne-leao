@@ -86,6 +86,16 @@ class ReportDataExtractor:
             return 0, 0, 0
 
     @staticmethod
+    def format_cpf(cpf: str) -> str:
+        """
+        Formata CPF para o padrão "000.000.000-00"
+        """
+        cpf_limpo = re.sub(r'\D', '', str(cpf))
+        if len(cpf_limpo) == 11:
+            return f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:]}"
+        return cpf_limpo
+
+    @staticmethod
     def extract_report_variables(recibo: Dict, paciente: Dict) -> Dict[str, str]:
         """
         Extrai todas as variáveis necessárias para o relatório.
@@ -98,17 +108,12 @@ class ReportDataExtractor:
 
         if cpf_benef and cpf_benef != cpf_pagador:
             # Usar dados de beneficiário
-            variables['#CPF'] = cpf_benef
+            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_benef)
             variables['#NomePac'] = paciente.get('nome_benef', '').strip()
         else:
             # Usar dados de pagador
-            variables['#CPF'] = cpf_pagador
+            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_pagador)
             variables['#NomePac'] = paciente.get('nome_pagador', '').strip()
-
-        # Data de início do atendimento
-        variables['#DtInicioAtend'] = paciente.get('inicio', '').strip()
-
-        # Extração de dados da descrição
         descricao = recibo.get('descricao', '')
 
         # Número de sessões
@@ -149,10 +154,14 @@ class ReportDataExtractor:
 
             # Ano
             variables['#AnoDasConsultas2'] = str(ano)
+
+            # Mês numérico com 2 dígitos para nome do arquivo
+            variables['#MesNumerico'] = f"{mes:02d}"
         else:
             variables['#UltDiaMesConsultas'] = ''
             variables['#MesDasConsultas2'] = ''
             variables['#AnoDasConsultas2'] = ''
+            variables['#MesNumerico'] = ''
 
         # Forma presencial (por enquanto vazio)
         variables['#FormaPresencial'] = ''
@@ -281,48 +290,26 @@ class ReportGenerator:
     @staticmethod
     def convert_docx_to_pdf(docx_path: str, pdf_path: str) -> bool:
         """
-        Converte arquivo DOCX para PDF usando LibreOffice em background.
+        Converte arquivo DOCX para PDF.
+        - Windows: usa Microsoft Word (docx2pdf)
+        - Linux/Mac: usa LibreOffice em background
         """
         try:
             import subprocess
             import platform
 
-            # Definir comando baseado no SO
             if platform.system() == "Windows":
-                # Tentar encontrar LibreOffice
-                possible_paths = [
-                    r"C:\Program Files\LibreOffice\program\soffice.exe",
-                    r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-                ]
+                # No Windows, docx2pdf utiliza o Microsoft Word instalado.
+                return ReportGenerator.convert_with_docx2pdf(docx_path, pdf_path)
 
-                libreoffice_path = None
-                for path in possible_paths:
-                    if os.path.exists(path):
-                        libreoffice_path = path
-                        break
-
-                if not libreoffice_path:
-                    print(
-                        "Erro: LibreOffice não encontrado. Instalando biblioteca alternativa...")
-                    return ReportGenerator.convert_with_docx2pdf(docx_path, pdf_path)
-
-                # Comando para converter
-                cmd = [
-                    libreoffice_path,
-                    "--headless",
-                    "--convert-to", "pdf",
-                    "--outdir", os.path.dirname(pdf_path) or ".",
-                    docx_path
-                ]
-
-            else:  # Linux/Mac
-                cmd = [
-                    "libreoffice",
-                    "--headless",
-                    "--convert-to", "pdf",
-                    "--outdir", os.path.dirname(pdf_path) or ".",
-                    docx_path
-                ]
+            # Linux/Mac: conversão com LibreOffice
+            cmd = [
+                "libreoffice",
+                "--headless",
+                "--convert-to", "pdf",
+                "--outdir", os.path.dirname(pdf_path) or ".",
+                docx_path
+            ]
 
             # Executar comando
             result = subprocess.run(cmd, capture_output=True, timeout=30)
@@ -343,19 +330,20 @@ class ReportGenerator:
 
         except Exception as e:
             print(f"Erro ao converter com LibreOffice: {e}")
-            return ReportGenerator.convert_with_docx2pdf(docx_path, pdf_path)
+            return False
 
     @staticmethod
     def convert_with_docx2pdf(docx_path: str, pdf_path: str) -> bool:
         """
-        Fallback: converte usando a biblioteca docx2pdf (requer LibreOffice instalado).
+        Converte usando a biblioteca docx2pdf.
+        No Windows, isso requer Microsoft Word instalado.
         """
         try:
             from docx2pdf import convert
             convert(docx_path, pdf_path)
             return os.path.exists(pdf_path)
         except Exception as e:
-            print(f"Erro ao converter com docx2pdf: {e}")
+            print(f"Erro ao converter com Microsoft Word (docx2pdf): {e}")
             return False
 
 

@@ -15,6 +15,7 @@ O sistema extrai automaticamente as seguintes informações do recibo:
 | `#NomePac` | Cadastro de pacientes | Nome do beneficiário (ou pagador se não houver beneficiário) |
 | `#CPF` | Recibo | CPF do beneficiário (ou pagador) |
 | `#DtInicioAtend` | Cadastro de pacientes | Data de início do atendimento |
+| `#DtFimAtend` | Cadastro de pacientes | Data de fim do atendimento |
 | `#NrSessoes` | Descrição do recibo | Número de sessões (extraído via regex) |
 | `#DataDasCons` | Descrição do recibo | Lista formatada de datas das consultas |
 | `#UltDiaMesConsultas` | Cálculo automático | Último dia do mês da primeira consulta |
@@ -127,6 +128,24 @@ pypdf>=3.0.0              # Manipulação de PDF
 ```
 
 Além disso, o sistema usa **LibreOffice** via linha de comando para converter DOCX para PDF. O sistema detecta a instalação automaticamente.
+
+Observação: em ambientes Windows o projeto também suporta a conversão DOCX→PDF usando a biblioteca `docx2pdf` (necessita Microsoft Word instalado). Se preferir esse caminho, instale `docx2pdf` na virtualenv:
+
+```
+pip install docx2pdf
+```
+
+### Concordância e Datas Futuras
+
+O gerador aplica regras de gramática/tempo verbal no parágrafo que descreve as sessões:
+
+- Quando houver apenas uma sessão e a data for passada: "Nesse período foi realizada 1 sessão no dia DD/MM/YYYY." 
+- Quando houver mais de uma sessão e todas as datas forem passadas: "Nesse período foram realizadas N sessões nos dias D1, D2 e Dn." 
+- Se existir ao menos uma data futura (relativa à data atual), o texto usa o futuro do presente:
+  - Singular: "Nesse período será realizada 1 sessão no dia DD/MM/YYYY." 
+  - Plural: "Nesse período serão realizadas N sessões nos dias D1, D2 e Dn." 
+
+Essas regras são aplicadas como pós-processamento do documento após a substituição das variáveis, garantindo concordância e preposição correta ("no dia" vs "nos dias").
 
 ## Extração de Dados da Descrição
 

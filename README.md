@@ -22,6 +22,15 @@ Sistema em Python com interface gráfica (customtkinter) para geração de arqui
 - **Interface Dual**: Formulário + Lista de itens salvos em cada aba com scroll automático
 - **Scroll Dinâmico**: Formulários e listas com scrollbars para melhor navegação
 
+## Novidades (últimas alterações)
+
+- Adicionado campo `Fim Tratamento` no cadastro de pacientes (`fim`) e carregamento ao editar cadastro.
+- O campo `Gera Relatório` agora aceita templates específicos (ex: `_RelatorioTemplateCamila.docx`) além de `Sim`/`Não`.
+- O gerador de relatórios passou a suportar as variáveis `#DtInicioAtend` e `#DtFimAtend` (extraídas do cadastro do paciente).
+- Correções gramaticais no gerador de relatórios: concordância singular/plural e ajuste de preposição ("no dia" / "nos dias") conforme número de sessões e se as datas são futuras ou passadas.
+- Os relatórios são salvos automaticamente em pastas mensais na área de trabalho (ex.: `~/Desktop/Relatório de Maio/`).
+- Script de apoio `generate_for_adrielle.py` adicionado para gerar exemplos de relatórios localmente.
+
 ## Requisitos
 
 - Python 3.8+
