@@ -57,8 +57,7 @@ class CadastroPacientesWindow(ctk.CTkToplevel):
             ("Nome Beneficiário", "nome_benef"),
             ("CPF Beneficiário", "cpf_benef"),
             ("Valor Consulta (R$)", "valor_cons"),
-            ("Código CID", "cod_cid"),
-            ("Início Tratamento", "inicio")
+            ("Código CID", "cod_cid")
         ]
 
         for lbl, key in fields:
@@ -66,6 +65,23 @@ class CadastroPacientesWindow(ctk.CTkToplevel):
             entry = ctk.CTkEntry(form_frame)
             entry.pack(fill="x", padx=5, pady=(0, 10))
             self.entries[key] = entry
+
+        row_frame = ctk.CTkFrame(form_frame, fg_color="transparent")
+        row_frame.pack(fill="x", padx=5, pady=(0, 10))
+
+        inicio_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+        inicio_frame.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkLabel(inicio_frame, text="Início Tratamento").pack(anchor="w")
+        inicio_entry = ctk.CTkEntry(inicio_frame)
+        inicio_entry.pack(fill="x")
+        self.entries['inicio'] = inicio_entry
+
+        fim_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+        fim_frame.pack(side="left", fill="x", expand=True, padx=(5, 0))
+        ctk.CTkLabel(fim_frame, text="Fim Tratamento").pack(anchor="w")
+        fim_entry = ctk.CTkEntry(fim_frame)
+        fim_entry.pack(fill="x")
+        self.entries['fim'] = fim_entry
 
         # Campos adicionais solicitados (mesma linha)
         row_frame = ctk.CTkFrame(form_frame, fg_color="transparent")
@@ -82,7 +98,8 @@ class CadastroPacientesWindow(ctk.CTkToplevel):
         gera_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
         gera_frame.pack(side="left", fill="x", expand=True, padx=(5, 0))
         ctk.CTkLabel(gera_frame, text="Gera Relatório").pack(anchor="w")
-        gera_cb = ctk.CTkComboBox(gera_frame, values=["Sim", "Não", "_RelatorioTemplateCamila.docx","_RelatorioTemplateCarimboFem.docx", "_RelatorioTemplateCarimboFemCid32.docx", "_RelatorioTemplateCarimboMasc.docx", "_RelatorioTemplateDanilo.docx", "_RelatorioTemplateDigitalFem.docx", "_RelatorioTemplateDigitalMasc.docx"])
+        gera_cb = ctk.CTkComboBox(gera_frame, values=["Sim", "Não", "_RelatorioTemplateCamila.docx", "_RelatorioTemplateCarimboFem.docx", "_RelatorioTemplateCarimboFemCid32.docx",
+                                  "_RelatorioTemplateCarimboMasc.docx", "_RelatorioTemplateDanilo.docx", "_RelatorioTemplateDigitalFem.docx", "_RelatorioTemplateDigitalMasc.docx"])
         gera_cb.pack(fill="x")
         gera_cb.set("")
         self.entries['gera_relatorio'] = gera_cb
@@ -143,7 +160,17 @@ class CadastroPacientesWindow(ctk.CTkToplevel):
         # Normalizar opções de combo (garantir valores esperados)
         if 'genero' in data and data['genero'] not in ('Fem', 'Masc'):
             data['genero'] = ''
-        if 'gera_relatorio' in data and data['gera_relatorio'] not in ('Sim', 'Não'):
+        valid_relatorio_values = (
+            'Sim', 'Não',
+            '_RelatorioTemplateCamila.docx',
+            '_RelatorioTemplateCarimboFem.docx',
+            '_RelatorioTemplateCarimboFemCid32.docx',
+            '_RelatorioTemplateCarimboMasc.docx',
+            '_RelatorioTemplateDanilo.docx',
+            '_RelatorioTemplateDigitalFem.docx',
+            '_RelatorioTemplateDigitalMasc.docx'
+        )
+        if 'gera_relatorio' in data and data['gera_relatorio'] not in valid_relatorio_values:
             data['gera_relatorio'] = ''
 
         try:

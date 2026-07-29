@@ -107,13 +107,18 @@ class ReportDataExtractor:
         cpf_pagador = recibo.get('cpf_pagador', '').strip()
 
         if cpf_benef and cpf_benef != cpf_pagador:
-            # Usar dados de beneficiário
-            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_benef)
+            # Usar dados de beneficiário (CPF sem formatação: apenas dígitos)
+            variables['#CPF'] = re.sub(r"\D", "", str(cpf_benef))
             variables['#NomePac'] = paciente.get('nome_benef', '').strip()
         else:
-            # Usar dados de pagador
-            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_pagador)
+            # Usar dados de pagador (CPF sem formatação: apenas dígitos)
+            variables['#CPF'] = re.sub(r"\D", "", str(cpf_pagador))
             variables['#NomePac'] = paciente.get('nome_pagador', '').strip()
+
+        # Datas de atendimento do paciente
+        variables['#DtInicioAtend'] = paciente.get('inicio', '').strip()
+        variables['#DtFimAtend'] = paciente.get('fim', '').strip()
+
         descricao = recibo.get('descricao', '')
 
         # Número de sessões
@@ -124,6 +129,23 @@ class ReportDataExtractor:
         # Datas das consultas e primeira data
         datas_consultas, primeira_data = ReportDataExtractor.extract_dates_from_description(
             descricao)
+
+        # Se existir alguma sessão no futuro, usar a data atual no relatório
+        hoje = datetime.now().date()
+        datas_parsed = []
+        for data_str in datas_consultas:
+            dia, mes, ano = ReportDataExtractor.parse_date(data_str)
+            try:
+                data_obj = datetime(ano, mes, dia).date()
+            except Exception:
+                data_obj = None
+            if data_obj is not None:
+                datas_parsed.append((data_str, data_obj))
+
+        if any(data_obj > hoje for _, data_obj in datas_parsed):
+            hoje_str = hoje.strftime('%d/%m/%Y')
+            datas_consultas = [hoje_str]
+            primeira_data = hoje_str
 
         # Formatar datas para exibição (ex: "06/04/2026, 13/04/2026, ...")
         if datas_consultas:
@@ -223,6 +245,112 @@ class ReportGenerator:
                     for paragraph in cell.paragraphs:
                         self.replace_text_in_paragraph(paragraph, variables)
 
+    def fix_grammar_in_paragraph(self, paragraph):
+        """
+        Corrige erros gramaticais após substituição de variáveis.
+        Considera datas para determinar se usar tempo passado ou futuro:
+        - Passado: "foi/foram realizada(s)"
+        - Futuro: "será/serão realizada(s)"
+        """
+        full_text = ''.join([run.text for run in paragraph.runs])
+        original_text = full_text
+
+        # Extrair datas do parágrafo (DD/MM/YYYY)
+        datas_encontradas = re.findall(r'(\d{2}/\d{2}/\d{4})', full_text)
+
+        # Verificar se alguma data é futura
+        from datetime import datetime
+        hoje = datetime.now().date()
+        tem_data_futura = False
+
+        for data_str in datas_encontradas:
+            try:
+                dia, mes, ano = map(int, data_str.split('/'))
+                data_obj = datetime(ano, mes, dia).date()
+                if data_obj > hoje:
+                    tem_data_futura = True
+                    break
+            except Exception:
+                pass
+
+        # Extrair número de sessões
+        match_sessoes = re.search(
+            r'(\d+)\s+sess(?:ões|ão)', full_text, flags=re.IGNORECASE)
+
+        if match_sessoes:
+            qtd = match_sessoes.group(1)
+
+            if tem_data_futura:
+                # Futuro
+                if qtd == '1':
+                    full_text = re.sub(
+                        r'(?:foi|foram) realizada?s? 1 sess(?:ões|ão)',
+                        'será realizada 1 sessão',
+                        full_text,
+                        flags=re.IGNORECASE
+                    )
+                else:
+                    full_text = re.sub(
+                        r'(?:foi|foram) realizada?s? \d+ sess(?:ões|ão)',
+                        f'serão realizadas {qtd} sessões',
+                        full_text,
+                        flags=re.IGNORECASE
+                    )
+            else:
+                # Passado
+                if qtd == '1':
+                    full_text = re.sub(
+                        r'(?:será|serão) realizada?s? 1 sess(?:ões|ão)',
+                        'foi realizada 1 sessão',
+                        full_text,
+                        flags=re.IGNORECASE
+                    )
+                    full_text = re.sub(
+                        r'foram realizadas 1 sess(?:ões|ão)',
+                        'foi realizada 1 sessão',
+                        full_text,
+                        flags=re.IGNORECASE
+                    )
+                else:
+                    full_text = re.sub(
+                        r'(?:será|serão) realizada?s? \d+ sess(?:ões|ão)',
+                        f'foram realizadas {qtd} sessões',
+                        full_text,
+                        flags=re.IGNORECASE
+                    )
+
+        # Corrigir preposição: "nos dias" <-> "no dia"
+        if re.search(r'\b1 sess(?:ões|ão)\b', full_text, flags=re.IGNORECASE):
+            full_text = re.sub(r'\bnos dias\b', 'no dia',
+                               full_text, flags=re.IGNORECASE)
+        else:
+            full_text = re.sub(r'\bno dia\b', 'nos dias',
+                               full_text, flags=re.IGNORECASE)
+
+        # Se houve mudança, atualizar o parágrafo
+        if full_text != original_text:
+            for run in paragraph.runs:
+                run.text = ""
+            if paragraph.runs:
+                paragraph.runs[0].text = full_text
+            else:
+                paragraph.add_run(full_text)
+
+    def fix_grammar_in_document(self, doc):
+        """
+        Corrige erros gramaticais em todo o documento.
+        """
+        # Corrigir em parágrafos
+        for paragraph in doc.paragraphs:
+            self.fix_grammar_in_paragraph(paragraph)
+
+        # Corrigir em tabelas
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        self.fix_grammar_in_paragraph(paragraph)
+
     def generate_report(self, recibo: Dict, paciente: Dict,
                         output_path: str = None) -> bool:
         """
@@ -252,6 +380,9 @@ class ReportGenerator:
             # Substituir variáveis
             self.replace_text_in_document(doc, variables)
 
+            # Corrigir erros gramaticais
+            self.fix_grammar_in_document(doc)
+
             # Definir caminho de saída
             if output_path is None:
                 # Gerar nome automaticamente
@@ -263,7 +394,7 @@ class ReportGenerator:
                 nome_limpo = re.sub(r'[<>:"/\\|?*]', '',
                                     nome_beneficiario).strip()
 
-                output_path = f"{nome_limpo} - Relatório {ano}{mes}.docx"
+                output_path = f"{nome_limpo} - Relatorio {ano}{mes}.docx"
 
             # Salvar DOCX
             docx_path = output_path if output_path.endswith(
@@ -277,14 +408,14 @@ class ReportGenerator:
             success = self.convert_docx_to_pdf(docx_path, pdf_path)
 
             if success:
-                print(f"Relatório PDF gerado: {pdf_path}")
+                print(f"Relatorio PDF gerado: {pdf_path}")
                 # Remover arquivo DOCX intermediário (opcional)
                 # os.remove(docx_path)
 
             return success
 
         except Exception as e:
-            print(f"Erro ao gerar relatório: {e}")
+            print(f"Erro ao gerar relatorio: {e}")
             return False
 
     @staticmethod
@@ -412,7 +543,7 @@ class RecibosReportManager:
             return self.report_generator.generate_report(recibo, paciente, output_path)
 
         except Exception as e:
-            print(f"Erro ao gerar relatório para recibo: {e}")
+            print(f"Erro ao gerar relatorio para recibo: {e}")
             return False
 
     def _find_paciente_in_files(self, cpf: str) -> Optional[Dict]:
