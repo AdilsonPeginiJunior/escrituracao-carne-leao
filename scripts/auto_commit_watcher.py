@@ -54,7 +54,8 @@ def run_auto_commit():
 
     # Verificar se há mudanças a commitar
     try:
-        check_status = run([py, script, "--no-add"], capture_output=True, text=True)
+        check_status = run([py, script, "--no-add"],
+                           capture_output=True, text=True)
         # O script com --no-add apenas imprime quando não há alterações
     except Exception as e:
         print(f"Erro ao executar auto_commit: {e}")
@@ -70,9 +71,11 @@ def run_auto_commit():
 
 def main():
     print("Iniciando Auto Commit Watcher...")
-    ignore = [str(ROOT / ".venv"), str(ROOT / "venv"), str(ROOT / "node_modules")]
+    ignore = [str(ROOT / ".venv"), str(ROOT / "venv"),
+              str(ROOT / "node_modules")]
 
-    event_handler = DebouncedHandler(run_auto_commit, debounce_seconds=1.5, ignore_paths=ignore)
+    event_handler = DebouncedHandler(
+        run_auto_commit, debounce_seconds=1.5, ignore_paths=ignore)
     observer = Observer()
     observer.schedule(event_handler, str(ROOT), recursive=True)
     observer.start()
