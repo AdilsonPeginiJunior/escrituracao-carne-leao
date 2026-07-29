@@ -5,3 +5,4 @@ docx2pdf>=0.1.8
 pdf2docx>=0.5.1
 reportlab>=3.6.0
 pypdf>=3.0.0
+watchdog>=3.0.0
