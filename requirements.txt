@@ -6,3 +6,5 @@ pdf2docx>=0.5.1
 reportlab>=3.6.0
 pypdf>=3.0.0
 watchdog>=3.0.0
+# Assinatura digital de PDFs (ICP-Brasil A1/A3): pyHanko[pkcs11] cobre PAdES + suporte a token/cartão via PKCS#11
+pyHanko[pkcs11]>=0.37.0

@@ -11,3 +11,8 @@ Thumbs.db
 
 # Dados sensíveis - LGPD
 *.json
+
+# Certificados digitais (ICP-Brasil) - nunca versionar
+Certificados/
+*.pfx
+*.p12

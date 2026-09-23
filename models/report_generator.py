@@ -107,12 +107,12 @@ class ReportDataExtractor:
         cpf_pagador = recibo.get('cpf_pagador', '').strip()
 
         if cpf_benef and cpf_benef != cpf_pagador:
-            # Usar dados de beneficiário (CPF sem formatação: apenas dígitos)
-            variables['#CPF'] = re.sub(r"\D", "", str(cpf_benef))
+            # Usar dados de beneficiário
+            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_benef)
             variables['#NomePac'] = paciente.get('nome_benef', '').strip()
         else:
-            # Usar dados de pagador (CPF sem formatação: apenas dígitos)
-            variables['#CPF'] = re.sub(r"\D", "", str(cpf_pagador))
+            # Usar dados de pagador
+            variables['#CPF'] = ReportDataExtractor.format_cpf(cpf_pagador)
             variables['#NomePac'] = paciente.get('nome_pagador', '').strip()
 
         # Datas de atendimento do paciente
@@ -129,23 +129,6 @@ class ReportDataExtractor:
         # Datas das consultas e primeira data
         datas_consultas, primeira_data = ReportDataExtractor.extract_dates_from_description(
             descricao)
-
-        # Se existir alguma sessão no futuro, usar a data atual no relatório
-        hoje = datetime.now().date()
-        datas_parsed = []
-        for data_str in datas_consultas:
-            dia, mes, ano = ReportDataExtractor.parse_date(data_str)
-            try:
-                data_obj = datetime(ano, mes, dia).date()
-            except Exception:
-                data_obj = None
-            if data_obj is not None:
-                datas_parsed.append((data_str, data_obj))
-
-        if any(data_obj > hoje for _, data_obj in datas_parsed):
-            hoje_str = hoje.strftime('%d/%m/%Y')
-            datas_consultas = [hoje_str]
-            primeira_data = hoje_str
 
         # Formatar datas para exibição (ex: "06/04/2026, 13/04/2026, ...")
         if datas_consultas:
@@ -184,6 +167,12 @@ class ReportDataExtractor:
             variables['#MesDasConsultas2'] = ''
             variables['#AnoDasConsultas2'] = ''
             variables['#MesNumerico'] = ''
+
+        hoje = datetime.now().date()
+        variables['#DataAssinatura'] = (
+            f"{hoje.day} de {ReportDataExtractor.MESES_EXTENSO[hoje.month]} "
+            f"de {hoje.year}"
+        )
 
         # Forma presencial (por enquanto vazio)
         variables['#FormaPresencial'] = ''
@@ -547,28 +536,31 @@ class RecibosReportManager:
             return False
 
     def _find_paciente_in_files(self, cpf: str) -> Optional[Dict]:
-        """
-        Procura um paciente por CPF nos arquivos JSON de profissionais.
-        """
+        """Procura um paciente por CPF dentro da pasta do profissional logado."""
         try:
-            # Procurar em arquivos de profissionais (formato: {profissional}_pacientes.json)
-            for file in os.listdir("."):
-                if file.endswith("_pacientes.json"):
-                    try:
-                        with open(file, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            pacientes = data.get('pacientes', [])
+            profissional_dir = os.path.join('profissionais', self.profissional_nome or '')
+            pacientes_file = os.path.join(profissional_dir, 'pacientes.json')
+            if self.profissional_nome and os.path.exists(pacientes_file):
+                with open(pacientes_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for paciente in data.get('pacientes', []):
+                        cpf_benef = paciente.get('cpf_benef', '').strip()
+                        cpf_pagador = paciente.get('cpf_pagador', '').strip()
+                        if cpf_benef == cpf or cpf_pagador == cpf:
+                            return paciente
 
-                            for paciente in pacientes:
-                                cpf_benef = paciente.get(
-                                    'cpf_benef', '').strip()
-                                cpf_pagador = paciente.get(
-                                    'cpf_pagador', '').strip()
-
-                                if cpf_benef == cpf or cpf_pagador == cpf:
-                                    return paciente
-                    except Exception as e:
+            if os.path.exists('profissionais'):
+                for folder in sorted(os.listdir('profissionais'), key=str.lower):
+                    pacientes_file = os.path.join('profissionais', folder, 'pacientes.json')
+                    if not os.path.exists(pacientes_file):
                         continue
+                    with open(pacientes_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        for paciente in data.get('pacientes', []):
+                            cpf_benef = paciente.get('cpf_benef', '').strip()
+                            cpf_pagador = paciente.get('cpf_pagador', '').strip()
+                            if cpf_benef == cpf or cpf_pagador == cpf:
+                                return paciente
 
             return None
 

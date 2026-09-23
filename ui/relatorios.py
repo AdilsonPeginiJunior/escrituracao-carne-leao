@@ -3,22 +3,31 @@ from tkinter import messagebox, filedialog
 import json
 import os
 from pathlib import Path
-from models.storage import RecibosStorage, PacientesStorage
+from models.storage import RecibosStorage, PacientesStorage, get_profissional_storage_dir, get_profissional_file_path
 from models.report_generator import ReportGenerator, RecibosReportManager, ReportDataExtractor
 
 
 class GerarRelatoriosWindow(ctk.CTkToplevel):
     """Janela para gerenciar geração de relatórios"""
 
-    def __init__(self, parent, profissional_cpf: str = None):
+    def __init__(self, parent, current_user: dict | None = None):
         super().__init__(parent)
 
         self.title("Gerar Relatórios")
         self.geometry("1000x750")
 
-        self.profissional_cpf = profissional_cpf
-        self.recibos_storage = RecibosStorage()
-        self.pacientes_storage = None
+        self.current_user = current_user or {}
+        self.profissional_cpf = self.current_user.get('cpf_prof')
+
+        if self.current_user:
+            profissional_dir = get_profissional_storage_dir(self.current_user)
+            self.recibos_storage = RecibosStorage(
+                get_profissional_file_path(self.current_user, 'recibos_saude.json'))
+            self.pacientes_storage = PacientesStorage(
+                get_profissional_file_path(self.current_user, 'pacientes.json'))
+        else:
+            self.recibos_storage = RecibosStorage()
+            self.pacientes_storage = None
 
         self.report_manager = RecibosReportManager()
         self.report_manager.set_storage(
@@ -258,17 +267,31 @@ class GerarRelatoriosWindow(ctk.CTkToplevel):
 
         ctk.CTkButton(
             action_frame,
+            text="Assinatura Digital",
+            command=self.open_assinatura_digital,
+            fg_color="#1f6aa5"
+        ).grid(row=1, column=0, columnspan=2, padx=5, sticky="ew", pady=(0, 10))
+
+        ctk.CTkButton(
+            action_frame,
             text="Desselecionar Tudo",
             command=self.deselect_all_recibos,
             fg_color="gray"
-        ).grid(row=1, column=0, padx=5, sticky="ew")
+        ).grid(row=2, column=0, padx=5, sticky="ew")
 
         ctk.CTkButton(
             action_frame,
             text="Fechar",
             command=self.destroy,
             fg_color="darkgray"
-        ).grid(row=1, column=1, padx=5, sticky="ew")
+        ).grid(row=2, column=1, padx=5, sticky="ew")
+
+    def open_assinatura_digital(self):
+        """Abre a janela de assinatura digital de PDFs, já apontando para a pasta de saída dos relatórios"""
+        from ui.assinatura_digital import AssinaturaDigitalWindow
+        window = AssinaturaDigitalWindow(self, pasta_inicial=self.output_folder, current_user=self.current_user)
+        window.grab_set()
+        window.focus_force()
 
     def load_recibos(self):
         """Carrega lista de recibos"""
@@ -445,28 +468,35 @@ class GerarRelatoriosWindow(ctk.CTkToplevel):
                 ).pack(anchor="w", padx=10, pady=(0, 5))
 
     def _find_paciente(self, recibo):
-        """Procura paciente do recibo"""
+        """Procura paciente do recibo na pasta do profissional logado."""
         try:
             cpf_benef = recibo.get('cpf_benef', '').strip()
             cpf_pagador = recibo.get('cpf_pagador', '').strip()
             cpf_procurado = cpf_benef if cpf_benef and cpf_benef != cpf_pagador else cpf_pagador
 
-            # Procurar em arquivos de profissionais
-            for file in os.listdir("."):
-                if file.endswith("_pacientes.json"):
-                    try:
-                        with open(file, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            pacientes = data.get('pacientes', [])
+            if self.current_user:
+                folder = get_profissional_storage_dir(self.current_user)
+                pacientes_file = get_profissional_file_path(self.current_user, 'pacientes.json')
+                if os.path.exists(pacientes_file):
+                    with open(pacientes_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        for paciente in data.get('pacientes', []):
+                            cpf_b = paciente.get('cpf_benef', '').strip()
+                            cpf_p = paciente.get('cpf_pagador', '').strip()
+                            if cpf_b == cpf_procurado or cpf_p == cpf_procurado:
+                                return paciente
 
-                            for paciente in pacientes:
-                                cpf_b = paciente.get('cpf_benef', '').strip()
-                                cpf_p = paciente.get('cpf_pagador', '').strip()
-
-                                if cpf_b == cpf_procurado or cpf_p == cpf_procurado:
-                                    return paciente
-                    except Exception as e:
-                        continue
+            for folder in sorted([os.path.join('profissionais', d) for d in os.listdir('profissionais') if os.path.isdir(os.path.join('profissionais', d))], key=str.lower):
+                pacientes_file = os.path.join(folder, 'pacientes.json')
+                if not os.path.exists(pacientes_file):
+                    continue
+                with open(pacientes_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for paciente in data.get('pacientes', []):
+                        cpf_b = paciente.get('cpf_benef', '').strip()
+                        cpf_p = paciente.get('cpf_pagador', '').strip()
+                        if cpf_b == cpf_procurado or cpf_p == cpf_procurado:
+                            return paciente
 
             return None
         except Exception as e:

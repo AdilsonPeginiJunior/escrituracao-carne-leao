@@ -3,6 +3,7 @@ import os
 import csv
 from models.receita_saude import ReceitaSaudeManager
 
+
 def verify_csv_export():
     manager = ReceitaSaudeManager()
     

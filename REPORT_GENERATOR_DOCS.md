@@ -21,6 +21,7 @@ O sistema extrai automaticamente as seguintes informações do recibo:
 | `#UltDiaMesConsultas` | Cálculo automático | Último dia do mês da primeira consulta |
 | `#MesDasConsultas2` | Cálculo automático | Mês por extenso da primeira consulta |
 | `#AnoDasConsultas2` | Cálculo automático | Ano da primeira consulta |
+| `#DataAssinatura` | Data atual | Data da assinatura do relatório no formato "D de mês de AAAA" |
 | `#FormaPresencial` | Configuração | Vazio por padrão (espaço em branco) |
 
 ### Regras de Beneficiário
@@ -52,6 +53,7 @@ Datas das Consultas: #DataDasCons
 Ultimo dia do mês: #UltDiaMesConsultas
 Mês: #MesDasConsultas2
 Ano: #AnoDasConsultas2
+Data de assinatura: #DataAssinatura
 Forma: #FormaPresencial
 ```
 
@@ -183,6 +185,7 @@ O sistema trata os seguintes cenários:
 - [ ] Suporte a múltiplos templates
 - [ ] Geração em lote de vários relatórios
 - [ ] Suporte a PDF/A para conformidade fiscal
+- [ ] Revisar migração de dados legados para a estrutura `profissionais/<apelido>/`
 
 ## Testes
 
@@ -213,7 +216,7 @@ O teste valida:
 **Solução:** Verifique se:
 1. O paciente está cadastrado no sistema
 2. O CPF no recibo corresponde ao CPF no cadastro de pacientes
-3. O arquivo `{profissional}_pacientes.json` existe e é válido
+3. O arquivo `profissionais/<apelido>/pacientes.json` existe e é válido para o profissional logado
 
 ### "Variáveis não são substituídas corretamente"
 

@@ -21,15 +21,19 @@ Sistema em Python com interface gráfica (customtkinter) para geração de arqui
 - **Gestão de Pacientes**: Carregamento automático de CPFs a partir de `pacientes.json`
 - **Interface Dual**: Formulário + Lista de itens salvos em cada aba com scroll automático
 - **Scroll Dinâmico**: Formulários e listas com scrollbars para melhor navegação
+- **Assinatura Digital ICP-Brasil**: Assinatura de PDFs com certificado A1 (.pfx/.p12) ou A3 (token/cartão PKCS#11), com carimbo visível e validação de assinaturas
 
 ## Novidades (últimas alterações)
 
-- Adicionado campo `Fim Tratamento` no cadastro de pacientes (`fim`) e carregamento ao editar cadastro.
+- **Assinatura Digital de PDFs (ICP-Brasil)**: nova tela "Assinatura Digital" para assinar relatórios/PDFs com certificado **A1** (arquivo `.pfx`/`.p12`) ou **A3** (token/cartão via PKCS#11), com carimbo visível (Nome e CPF extraídos do certificado + Profissão e Conselho de Classe do profissional logado, fonte Verdana 10, cor #002060) e validação de assinaturas existentes.
+- Cadastro de Profissionais ampliado com os campos **Profissão**, **Sigla do Conselho** e **Nº de Inscrição no Conselho**.
+- Estrutura de dados por profissional implementada: cada usuário passa a ter uma pasta própria em `profissionais/<apelido>/`.
+- Os arquivos de pacientes, despesas e recibos agora ficam em pastas dedicadas ao profissional logado, em vez de ficarem no diretório raiz.
 - O campo `Gera Relatório` agora aceita templates específicos (ex: `_RelatorioTemplateCamila.docx`) além de `Sim`/`Não`.
 - O gerador de relatórios passou a suportar as variáveis `#DtInicioAtend` e `#DtFimAtend` (extraídas do cadastro do paciente).
 - Correções gramaticais no gerador de relatórios: concordância singular/plural e ajuste de preposição ("no dia" / "nos dias") conforme número de sessões e se as datas são futuras ou passadas.
 - Os relatórios são salvos automaticamente em pastas mensais na área de trabalho (ex.: `~/Desktop/Relatório de Maio/`).
-- Script de apoio `generate_for_adrielle.py` adicionado para gerar exemplos de relatórios localmente.
+- Script de apoio renomeado para `gerar_relatorio_por_profissional.py` para refletir sua finalidade real.
 
 ## Requisitos
 
@@ -110,27 +114,48 @@ python app.py
 
 ```
 escrituracao-carne-leao/
-├── app.py                    # Aplicação principal com interface gráfica
+├── app.py                              # Aplicação principal com interface gráfica
+├── profissionais/                      # Dados organizados por profissional
+│   ├── AnaPaula/
+│   │   ├── pacientes.json
+│   │   ├── despesas_profissionais.json
+│   │   └── recibos_saude.json
+│   ├── AnaMariaSaade/
+│   │   ├── pacientes.json
+│   │   ├── despesas_profissionais.json
+│   │   └── recibos_saude.json
+│   └── ...
 ├── models/
 │   ├── __init__.py
-│   ├── receita_saude.py     # Gerenciador de receitas de saúde
-│   ├── despesas.py          # Gerenciador de despesas profissionais
-│   └── storage.py           # Persistência de dados em JSON
+│   ├── receita_saude.py                # Gerenciador de receitas de saúde
+│   ├── despesas.py                     # Gerenciador de despesas profissionais
+│   ├── storage.py                      # Persistência de dados em JSON
+│   ├── assinatura_digital.py           # Assinatura/validação de PDFs (ICP-Brasil A1/A3)
+│   └── report_generator.py             # Geração de relatórios
 ├── ui/
 │   ├── __init__.py
-│   └── widgets.py           # Componentes UI reutilizáveis
-├── recibos_saude.json       # Arquivo de dados de recibos (auto-criado)
-├── <apelido>_despesas_profissionais.json # Arquivo de dados de despesas por profissional (auto-criado)
-├── requirements.txt          # Dependências do projeto
-└── README.md                # Este arquivo
+│   ├── login.py                        # Tela de autenticação
+│   ├── pacientes.py                    # Cadastro de pacientes
+│   ├── profissionais.py                # Cadastro de profissionais
+│   ├── categorias_despesas.py          # Gerenciamento de categorias de despesas
+│   ├── relatorios.py                   # Geração de relatórios em lote
+│   ├── assinatura_digital.py           # Tela de assinatura digital de PDFs
+│   └── widgets.py                      # Componentes UI reutilizáveis
+├── Certificados/                       # Pasta local para certificados .pfx/.p12 (ignorada pelo git, nunca sobe para o GitHub)
+├── profissionais.json                  # Cadastro dos profissionais
+├── categorias_despesas.json            # Categorias de despesas
+├── requirements.txt                    # Dependências do projeto
+├── README.md                           # Este arquivo
+└── gerar_relatorio_por_profissional.py # Script de apoio para geração de relatórios por profissional
 ```
 
 ## Sistema de Armazenamento
 
-O sistema utiliza arquivos JSON para persistência de dados:
+O sistema utiliza arquivos JSON para persistência de dados, sempre dentro da pasta do profissional logado:
 
-- **recibos_saude.json**: Armazena todos os recibos de saúde salvos
-- **<apelido>_despesas_profissionais.json**: Armazena as despesas profissionais do usuário logado
+- **profissionais/<apelido>/pacientes.json**: armazena os pacientes do profissional
+- **profissionais/<apelido>/despesas_profissionais.json**: armazena as despesas profissionais do usuário logado
+- **profissionais/<apelido>/recibos_saude.json**: armazena os recibos de saúde do profissional
 
 Os dados são salvos automaticamente quando você clica em "Salvar" e podem ser:
 - **Editados**: Clique em "Editar" para carregar no formulário

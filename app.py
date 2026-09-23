@@ -7,7 +7,14 @@ from datetime import datetime
 import os
 from models.receita_saude import ReceitaSaudeManager
 from models.despesas import DespesasManager
-from models.storage import RecibosStorage, DespesasStorage, PacientesStorage
+from models.storage import (
+    RecibosStorage,
+    DespesasStorage,
+    PacientesStorage,
+    get_profissional_storage_dir,
+    get_profissional_file_path,
+    migrate_legacy_profissional_files,
+)
 from models.auth import AuthManager
 from ui.widgets import create_frame, create_label, create_entry, create_button, DatePickerFrame, MultiDatePickerFrame, MonthYearPickerFrame
 from ui.relatorios import GerarRelatoriosWindow
@@ -139,12 +146,15 @@ class AplicacaoCarneLeao:
         self.root.title(
             f"Sistema - Carnê Leão | Profissional: {self.current_user.get('apelido', '')}")
 
-        # Configurar caminho do arquivo de pacientes e de despesas baseado no profissional
-        apelido_sanitizado = self.current_user.get(
-            'apelido', 'default').replace(' ', '')
-        # Ex: AnaPaula_pacientes.json / AnaPaula_despesas_profissionais.json
-        self.pacientes_file = f"{apelido_sanitizado}_pacientes.json"
-        self.despesas_file = f"{apelido_sanitizado}_despesas_profissionais.json"
+        # Configurar caminho do arquivo dentro da pasta do profissional logado.
+        self.profissional_dir = get_profissional_storage_dir(self.current_user)
+        migrate_legacy_profissional_files(self.current_user)
+        self.recibos_file = get_profissional_file_path(
+            self.current_user, 'recibos_saude.json')
+        self.pacientes_file = get_profissional_file_path(
+            self.current_user, 'pacientes.json')
+        self.despesas_file = get_profissional_file_path(
+            self.current_user, 'despesas_profissionais.json')
 
         # Obter tamanho da tela e configurar janela com 90% do tamanho
         screen_width = self.root.winfo_screenwidth()
@@ -167,7 +177,7 @@ class AplicacaoCarneLeao:
         # Gerenciadores
         self.receita_manager = ReceitaSaudeManager()
         self.despesas_manager = DespesasManager()
-        self.recibos_storage = RecibosStorage()
+        self.recibos_storage = RecibosStorage(self.recibos_file)
         self.despesas_storage = DespesasStorage(self.despesas_file)
         self.pacientes_storage = PacientesStorage(self.pacientes_file)
 
@@ -266,6 +276,8 @@ class AplicacaoCarneLeao:
         # O user pediu "No cadastro de profissionais...". Vou deixar botão visível.
         ctk.CTkButton(menu_frame, text="Cad. Profissionais",
                       command=self.open_profissionais_window, width=120).pack(side="left", padx=5)
+        ctk.CTkButton(menu_frame, text="Assinatura Digital",
+                      command=self.open_assinatura_digital_window, width=140).pack(side="left", padx=5)
 
         # Notebook (abas) com redimensionamento
         self.notebook = ctk.CTkTabview(main_frame)
@@ -303,6 +315,13 @@ class AplicacaoCarneLeao:
     def open_relatorios_window(self):
         """Abre janela de geração de relatórios"""
         window = GerarRelatoriosWindow(self.root, self.current_user)
+        window.grab_set()
+        window.focus_force()
+
+    def open_assinatura_digital_window(self):
+        """Abre janela de assinatura digital de PDFs (ICP-Brasil A1/A3)"""
+        from ui.assinatura_digital import AssinaturaDigitalWindow
+        window = AssinaturaDigitalWindow(self.root, current_user=self.current_user)
         window.grab_set()
         window.focus_force()
 
@@ -497,27 +516,44 @@ class AplicacaoCarneLeao:
 
         self.recibos_frame = scrollable_frame
 
+        # Ações da lista de recibos em uma única linha
+        actions_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
+        actions_frame.grid(row=2, column=0, pady=10, padx=10, sticky="ew")
+        actions_frame.columnconfigure((0, 1, 2), weight=1)
+
         # Botão para gerar CSV
         export_btn = ctk.CTkButton(
-            right_frame,
+            actions_frame,
             text="Exportar Recibos para CSV",
             command=self.export_recibos_csv,
             fg_color="darkgreen",
             height=40,
             font=("Arial", 12, "bold")
         )
-        export_btn.grid(row=2, column=0, pady=10, sticky="ew", padx=10)
+        export_btn.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+
+        # Botão para limpar todos os recibos
+        clear_recibos_btn = ctk.CTkButton(
+            actions_frame,
+            text="Limpar Todos os Recibos",
+            command=self.clear_all_recibos,
+            fg_color="#9b2226",
+            hover_color="#7f1d1d",
+            height=40,
+            font=("Arial", 12, "bold")
+        )
+        clear_recibos_btn.grid(row=0, column=1, sticky="ew", padx=5)
 
         # Botão para gerar relatórios
         relatorios_btn = ctk.CTkButton(
-            right_frame,
+            actions_frame,
             text="Gerar Relatórios",
             command=self.open_relatorios_window,
             fg_color="darkblue",
             height=40,
             font=("Arial", 12, "bold")
         )
-        relatorios_btn.grid(row=3, column=0, pady=10, sticky="ew", padx=10)
+        relatorios_btn.grid(row=0, column=2, sticky="ew", padx=(5, 0))
 
         # Carregar recibos ao iniciar
         self.refresh_recibos_list()
@@ -964,6 +1000,27 @@ class AplicacaoCarneLeao:
             self.refresh_recibos_list()
             messagebox.showinfo("Sucesso", "Recibo deletado com sucesso!")
 
+    def clear_all_recibos(self):
+        """Remove todos os recibos do profissional logado após confirmação."""
+        recibos = self.recibos_storage.load_recibos()
+        if not recibos:
+            messagebox.showinfo("Aviso", "Não há recibos para limpar.")
+            return
+
+        confirmado = messagebox.askyesno(
+            "Confirmar limpeza",
+            f"Tem certeza que deseja excluir todos os {len(recibos)} recibos?\n"
+            "Esta ação não poderá ser desfeita."
+        )
+        if not confirmado:
+            return
+
+        self.recibos_storage.clear_all()
+        self.editing_recibo_id = None
+        self.save_recibo_btn.configure(text="Salvar Recibo")
+        self.refresh_recibos_list()
+        messagebox.showinfo("Sucesso", "Todos os recibos foram excluídos.")
+
     def edit_despesa(self, despesa_id):
         """Carrega uma despesa para edição"""
         despesa = self.despesas_storage.get_despesa(despesa_id)
@@ -1162,13 +1219,8 @@ class AplicacaoCarneLeao:
                 # O User não pediu explicitamente filtrar a lista visual, mas parece implícito num sistema multi-usuário.
                 # Vou filtrar a exportação pelo cpf do logado E garantir que os dados exportados usem os dados dele.
 
-                # Se recibo não tem cpf_prof, assume o do logado (legado).
-                # Se tem e é diferente, não exporta? (Sistema multi-usuário real).
-                # Vou filtrar: Apenas recibos deste usuário.
-
-                # Mas antes, verificar se devemos filtrar a LISTA visual também.
-                # Para MVP, vou filtrar no export.
-
+                # Cada profissional tem sua própria pasta de dados, então apenas
+                # recibos pertencentes ao usuário logado devem ser exportados.
                 r_cpf_prof = recibo.get('cpf_prof')
                 current_cpf = self.current_user.get('cpf_prof')
 

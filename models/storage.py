@@ -1,7 +1,80 @@
 import json
 import os
+import unicodedata
 from typing import List, Dict
 from datetime import datetime
+
+
+def sanitize_profissional_name(apelido: str) -> str:
+    """Normaliza o nome do profissional para uso em nomes de pasta/arquivo."""
+    if apelido is None:
+        return "default"
+
+    normalized = unicodedata.normalize('NFKD', str(apelido).strip())
+    sanitized = ''.join(ch for ch in normalized if not unicodedata.combining(ch))
+    sanitized = ''.join(ch for ch in sanitized if ch.isalnum())
+    return sanitized or "default"
+
+
+def get_profissional_storage_dir(profissional: Dict | str | None) -> str:
+    """Retorna a pasta dedicada ao profissional no diretório 'profissionais'."""
+    if isinstance(profissional, dict):
+        apelido = profissional.get('apelido', '')
+    else:
+        apelido = str(profissional or '')
+
+    nome = sanitize_profissional_name(apelido)
+    base_dir = os.path.join(os.getcwd(), 'profissionais', nome)
+    os.makedirs(base_dir, exist_ok=True)
+    return base_dir
+
+
+def get_profissional_file_path(profissional: Dict | str | None, filename: str) -> str:
+    """Retorna o caminho de um arquivo dentro da pasta do profissional."""
+    return os.path.join(get_profissional_storage_dir(profissional), filename)
+
+
+def migrate_legacy_profissional_files(profissional: Dict | str | None) -> str:
+    """Move arquivos legados para a pasta correspondente ao profissional logado."""
+    profissional_dir = get_profissional_storage_dir(profissional)
+    if isinstance(profissional, dict):
+        apelido = profissional.get('apelido', '')
+    else:
+        apelido = str(profissional or '')
+    nome = sanitize_profissional_name(apelido)
+
+    legacy_files = [
+        f"{nome}_pacientes.json",
+        f"{nome}_despesas_profissionais.json",
+        f"{nome}_recibos_saude.json",
+    ]
+
+    for legacy_name in legacy_files:
+        if not os.path.exists(legacy_name):
+            continue
+
+        target_path = os.path.join(profissional_dir, os.path.basename(legacy_name).replace(f'{nome}_', ''))
+        if os.path.exists(target_path):
+            continue
+
+        os.replace(legacy_name, target_path)
+
+    for relative_name in ['pacientes.json', 'despesas_profissionais.json', 'recibos_saude.json']:
+        target_path = os.path.join(profissional_dir, relative_name)
+        if os.path.exists(target_path):
+            continue
+
+        if relative_name == 'pacientes.json':
+            with open(target_path, 'w', encoding='utf-8') as f:
+                json.dump({'pacientes': []}, f, ensure_ascii=False, indent=2)
+        elif relative_name == 'despesas_profissionais.json':
+            with open(target_path, 'w', encoding='utf-8') as f:
+                json.dump({'despesas': []}, f, ensure_ascii=False, indent=2)
+        elif relative_name == 'recibos_saude.json':
+            with open(target_path, 'w', encoding='utf-8') as f:
+                json.dump({'recibos': []}, f, ensure_ascii=False, indent=2)
+
+    return profissional_dir
 
 
 class RecibosStorage:
@@ -191,6 +264,7 @@ class ProfissionaisStorage:
         profissional['id'] = prof_id
         profissional['data_criacao'] = datetime.now().isoformat()
 
+        migrate_legacy_profissional_files(profissional)
         profissionais.append(profissional)
         self._save_all(profissionais)
 

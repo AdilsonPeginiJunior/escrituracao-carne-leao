@@ -42,8 +42,10 @@ class CadastroProfissionaisWindow(ctk.CTkToplevel):
             ("Apelido (Nome Exibição)", "apelido"),
             ("Usuário (Login)", "usuario"),
             ("Senha", "senha"),
-            ("Nº Inscrição", "inscricao"),
-            ("CPF Profissional", "cpf_prof")
+            ("CPF Profissional", "cpf_prof"),
+            ("Profissão", "profissao"),
+            ("Sigla do Conselho (ex: CRM, CRP, CRO)", "sigla_conselho"),
+            ("Nº Inscrição no Conselho", "inscricao"),
         ]
         
         for lbl, key in fields:
@@ -81,8 +83,17 @@ class CadastroProfissionaisWindow(ctk.CTkToplevel):
         for p in profs:
             item = ctk.CTkFrame(self.list_scroll)
             item.pack(fill="x", pady=2)
-            
-            lbl = ctk.CTkLabel(item, text=f"{p.get('apelido')} ({p.get('usuario')})")
+
+            profissao = p.get('profissao', '').strip()
+            sigla = p.get('sigla_conselho', '').strip()
+            inscricao = p.get('inscricao', '').strip()
+            conselho_txt = f" | {sigla} {inscricao}".strip() if (sigla or inscricao) else ""
+            texto = f"{p.get('apelido')} ({p.get('usuario')})"
+            if profissao:
+                texto += f" - {profissao}"
+            texto += conselho_txt
+
+            lbl = ctk.CTkLabel(item, text=texto)
             lbl.pack(side="left", padx=10)
             
             btn_del = ctk.CTkButton(item, text="X", width=30, fg_color="red", command=lambda x=p['id']: self.delete(x))
