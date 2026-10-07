@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 from typing import List, Dict
 
 
@@ -16,6 +17,14 @@ class ReceitaSaudeManager:
         """Limpa todas as receitas"""
         self.receitas = []
 
+    @staticmethod
+    def _data_sort_key(receita: Dict):
+        """Chave de ordenação pela data de pagamento (dd/mm/aaaa)"""
+        try:
+            return (0, datetime.strptime(str(receita.get('data', '')).strip(), '%d/%m/%Y'))
+        except ValueError:
+            return (1, datetime.max)
+
     def export_csv(self, file_path: str) -> None:
         """
         Exporta as receitas para um arquivo CSV
@@ -26,7 +35,7 @@ class ReceitaSaudeManager:
             writer = csv.writer(csvfile, delimiter=';')
 
             # Escrever dados (SEM cabeçalho, conforme padrão da Receita Federal)
-            for receita in self.receitas:
+            for receita in sorted(self.receitas, key=self._data_sort_key):
                 row = [
                     # Campo 1: Data (dd/mm/aaaa)
                     receita.get('data', ''),

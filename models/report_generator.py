@@ -316,6 +316,14 @@ class ReportGenerator:
             full_text = re.sub(r'\bno dia\b', 'nos dias',
                                full_text, flags=re.IGNORECASE)
 
+        # Início dos atendimentos: sempre uma única data ("no dia")
+        full_text = re.sub(
+            r'(atendimentos\s+se\s+iniciaram)\s+nos\s+dias\b',
+            r'\1 no dia',
+            full_text,
+            flags=re.IGNORECASE
+        )
+
         # Se houve mudança, atualizar o parágrafo
         if full_text != original_text:
             for run in paragraph.runs:
