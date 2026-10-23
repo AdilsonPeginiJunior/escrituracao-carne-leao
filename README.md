@@ -32,7 +32,7 @@ Sistema em Python com interface gráfica (customtkinter) para geração de arqui
 - O campo `Gera Relatório` agora aceita templates específicos (ex: `_RelatorioTemplateCamila.docx`) além de `Sim`/`Não`.
 - O gerador de relatórios passou a suportar as variáveis `#DtInicioAtend` e `#DtFimAtend` (extraídas do cadastro do paciente).
 - Correções gramaticais no gerador de relatórios: concordância singular/plural e ajuste de preposição ("no dia" / "nos dias") conforme número de sessões e se as datas são futuras ou passadas.
-- Os relatórios são salvos automaticamente em pastas mensais na área de trabalho (ex.: `~/Desktop/Relatório de Maio/`).
+- Os relatórios são salvos automaticamente em pastas mensais na área de trabalho (ex.: `~/Desktop/Relatorio de Maio/`).
 - Script de apoio renomeado para `gerar_relatorio_por_profissional.py` para refletir sua finalidade real.
 
 ## Requisitos

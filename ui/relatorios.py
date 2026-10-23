@@ -537,7 +537,7 @@ class GerarRelatoriosWindow(ctk.CTkToplevel):
 
         # Criar pasta específica do mês se não existir
         mes_capitalizado = mes.capitalize() if mes else "Sem_Mês"
-        pasta_mes = f"Relatório de {mes_capitalizado}"
+        pasta_mes = f"Relatorio de {mes_capitalizado}"
         caminho_mes = os.path.join(self.output_folder, pasta_mes)
 
         if not os.path.exists(caminho_mes):
@@ -547,7 +547,7 @@ class GerarRelatoriosWindow(ctk.CTkToplevel):
                 print(f"Erro ao criar pasta {caminho_mes}: {e}")
                 return False, f"Erro ao criar pasta de relatórios: {e}"
 
-        output_filename = f"{nome_limpo} - Relatório {ano}{mes.capitalize()}.pdf"
+        output_filename = f"{nome_limpo} - Relatorio {ano}{mes.capitalize()}.pdf"
         output_path = os.path.join(caminho_mes, output_filename)
 
         # Gerar relatório

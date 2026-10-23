@@ -88,7 +88,7 @@ if not os.path.exists(template):
     print('Template não encontrado:', template)
     exit(1)
 
-# Definir pasta de saída (Desktop/Relatório de Maio etc.)
+# Definir pasta de saída (Desktop/Relatorio de Maio etc.)
 variables = ReportGenerator(
     template).replace_text_in_document if False else None
 # Use ReportGenerator to build filename similar ao UI
@@ -100,13 +100,13 @@ if not mes:
     mes = datetime.now().strftime('%B')
 mes_cap = mes.capitalize()
 output_folder = os.path.expanduser('~/Desktop')
-pasta_mes = f'Relatório de {mes_cap}'
+pasta_mes = f'Relatorio de {mes_cap}'
 caminho_mes = os.path.join(output_folder, pasta_mes)
 if not os.path.exists(caminho_mes):
     os.makedirs(caminho_mes, exist_ok=True)
 
 nome_limpo = re.sub(r'[<>:"/\\|?*]', '', nome_benef).strip()
-output_filename = f"{nome_limpo} - Relatório {ano}{mes.capitalize()}.pdf"
+output_filename = f"{nome_limpo} - Relatorio {ano}{mes.capitalize()}.pdf"
 output_path = os.path.join(caminho_mes, output_filename)
 
 print('Gerando em:', output_path)
