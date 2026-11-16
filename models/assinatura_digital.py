@@ -345,7 +345,7 @@ class AssinadorPDF:
         field_name = f"AssinaturaCarneLeao_{datetime.now():%Y%m%d%H%M%S}"
 
         with open(caminho_pdf_entrada, "rb") as doc:
-            writer = IncrementalPdfFileWriter(doc)
+            writer = IncrementalPdfFileWriter(doc, strict=False)
 
             stamp_style = None
             cfg = config_visual or ConfiguracaoAssinaturaVisivel()
@@ -420,7 +420,7 @@ class AssinadorPDF:
 
         resultados = []
         with open(caminho_pdf, "rb") as f:
-            reader = PdfFileReader(f)
+            reader = PdfFileReader(f, strict=False)
             assinaturas = reader.embedded_signatures
 
             if not assinaturas:

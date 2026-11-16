@@ -53,8 +53,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Stage and commit workspace changes.")
     parser.add_argument("--message", help="Mensagem específica para o commit")
-    parser.add_argument("--push", action="store_true",
-                        help="Enviar o commit para o remoto após criar")
+    parser.add_argument(
+        "--push",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enviar o commit para o remoto após criar (padrão: ativado; use --no-push para desativar)",
+    )
     parser.add_argument("--no-add", action="store_true",
                         help="Não adicionar automaticamente as alterações")
     args = parser.parse_args()
@@ -78,12 +82,13 @@ def main() -> int:
 
     print("Commit criado com sucesso.")
     if args.push:
+        print("Enviando alterações para o GitHub...")
         push_result = run_git(["push"], check=False)
         if push_result.returncode != 0:
             print((push_result.stderr or push_result.stdout).strip()
                   or "Falha ao enviar para o remoto.")
             return push_result.returncode
-        print("Alterações enviadas para o remoto.")
+        print("Alterações enviadas para o GitHub com sucesso.")
     return 0
 
 
